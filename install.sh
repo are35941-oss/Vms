@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -t 1 ]]; then
+  cyan=$'\033[0;36m'; yellow=$'\033[1;33m'; green=$'\033[0;32m'; reset=$'\033[0m'
+else
+  cyan=''; yellow=''; green=''; reset=''
+fi
+printf '%s\n' "${yellow}===============================================${reset}"
+printf '%s\n' "${cyan}          TIGER VPS BOT INSTALLER${reset}"
+printf '%s\n' "${yellow}            Made by Tiger_Gid947${reset}"
+printf '%s\n' "${cyan}     Discord + DigitalOcean | Ubuntu / Debian${reset}"
+printf '%s\n\n' "${yellow}===============================================${reset}"
+
 if [[ ! -t 0 ]] && [[ ! -r /dev/tty ]]; then
   echo "An interactive terminal is required." >&2
   exit 1
@@ -15,11 +26,7 @@ if ! command -v apt-get >/dev/null || ! command -v systemctl >/dev/null; then
 fi
 
 exec 3</dev/tty
-read -r -p "Git repository URL containing bot.py and requirements.txt: " REPO <&3
-if [[ ! "$REPO" =~ ^https://[^[:space:]]+$ ]]; then
-  echo "A valid HTTPS repository URL is required." >&2
-  exit 1
-fi
+REPO=https://github.com/are35941-oss/Vms.git
 read -r -s -p "Discord bot token: " DISCORD_TOKEN <&3; echo
 read -r -s -p "DigitalOcean API token: " CLOUD_API_KEY <&3; echo
 read -r -p "Admin Discord user ID: " ADMIN_USER_ID <&3
@@ -34,6 +41,7 @@ if [[ ! "$DISCORD_TOKEN" =~ ^[A-Za-z0-9._-]+$ || ! "$CLOUD_API_KEY" =~ ^[A-Za-z0
 fi
 
 export DEBIAN_FRONTEND=noninteractive
+printf '%s\n' "${green}[+] Installing system dependencies...${reset}"
 apt-get update
 apt-get install -y git python3 python3-venv python3-pip ca-certificates
 INSTALL_DIR=/opt/vps-bot
@@ -41,6 +49,7 @@ if [[ -e "$INSTALL_DIR" ]]; then
   echo "$INSTALL_DIR already exists; refusing to overwrite it." >&2
   exit 1
 fi
+printf '%s\n' "${green}[+] Cloning Tiger VPS bot...${reset}"
 git clone -- "$REPO" "$INSTALL_DIR"
 test -f "$INSTALL_DIR/bot.py" && test -f "$INSTALL_DIR/requirements.txt"
 python3 -m venv "$INSTALL_DIR/.venv"
@@ -78,4 +87,5 @@ WantedBy=multi-user.target
 SERVICE
 systemctl daemon-reload
 systemctl enable --now vps-bot.service
-echo "Installed. Check logs with: journalctl -u vps-bot -f"
+printf '\n%s\n' "${green}Tiger VPS bot installed!${reset}"
+printf '%s\n' 'Status:  systemctl status vps-bot' 'Logs:    journalctl -u vps-bot -f' 'Restart: systemctl restart vps-bot'
